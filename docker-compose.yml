@@ -1,0 +1,59 @@
+version: '3.3'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: readsphere_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-readsphere}
+      POSTGRES_USER: ${POSTGRES_USER:-readsphere_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-readsphere_admin} -d ${POSTGRES_DB:-readsphere}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - readsphere_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: readsphere_pgadmin
+    restart: unless-stopped
+    user: root
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-user1@pgadmin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-12345}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      POSTGRES_DB: ${POSTGRES_DB:-readsphere}
+      POSTGRES_USER: ${POSTGRES_USER:-user1}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin-init.sh:/pgadmin-init.sh:ro
+    entrypoint: ["/bin/sh", "/pgadmin-init.sh"]
+    depends_on:
+      - postgres
+    networks:
+      - readsphere_network
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  readsphere_network:
+    driver: bridge
