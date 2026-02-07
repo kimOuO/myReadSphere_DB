@@ -29,6 +29,19 @@ DB/
 
 > **前提条件**: 确保已安装 Docker 和 Docker Compose（如未安装请参考 [INSTALL_DOCKER.md](INSTALL_DOCKER.md)）
 
+### 步骤 0: 确认必要文件（首次 clone 项目）
+
+如果你是首次从 Git clone 这个项目，请确认以下文件存在：
+
+✅ **必需文件**:
+- `init-db.sql` - 数据库初始化脚本（应该已包含在 Git 中）
+- `docker-compose.yml` - Docker 配置文件
+- `(prompt)Readsphere_Data_Schema.md` - 数据架构文档
+
+如果 `init-db.sql` 缺失，说明被 `.gitignore` 忽略了。你需要：
+1. 从团队成员获取这个文件，或
+2. 根据 `(prompt)Readsphere_Data_Schema.md` 重新生成
+
 ### 步骤 1: 进入 DB 目录
 
 ```bash

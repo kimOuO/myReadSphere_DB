@@ -8,6 +8,9 @@
 .docker/
 
 # 备份文件
-*.sql
 *.backup
-backup_*
+backup_*.sql
+
+# 忽略所有 SQL 文件，但保留 init-db.sql（这是初始化必需的）
+*.sql
+!init-db.sql

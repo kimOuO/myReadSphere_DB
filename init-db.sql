@@ -88,6 +88,27 @@ CREATE INDEX idx_tracking_events_created ON tracking_events(created_time);
 CREATE INDEX idx_tracking_events_meta_tags ON tracking_events USING GIN (meta_tags);
 
 -- ==================================================
+-- 6. Active Sessions Table (NEW in v2)
+-- ==================================================
+CREATE TABLE IF NOT EXISTS active_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    content_type VARCHAR(255) NOT NULL,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    last_active_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    duration_seconds INTEGER,
+    data_key VARCHAR(255),
+    created_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_active_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Indexes for active_sessions table
+CREATE INDEX idx_active_sessions_user ON active_sessions(user_id);
+CREATE INDEX idx_active_sessions_content_type ON active_sessions(content_type);
+CREATE INDEX idx_active_sessions_start_time ON active_sessions(start_time);
+CREATE INDEX idx_active_sessions_last_active ON active_sessions(last_active_time);
+
+-- ==================================================
 -- Foreign Key Constraints for Users Table
 -- ==================================================
 ALTER TABLE users
@@ -120,11 +141,11 @@ INSERT INTO class_book_access (class_id, book_id) VALUES
     ('22222222-2222-2222-2222-222222222222', 'cccccccc-cccc-cccc-cccc-cccccccccccc')
 ON CONFLICT (class_id, book_id) DO NOTHING;
 
--- Sample Users (password: test12345 - should be hashed in production)
+-- Sample Users (password: test12345 - bcrypt hashed)
 INSERT INTO users (id, email, password, first_name, last_name, role, class_id, cefr_level) VALUES
-    ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'test@gmail.com', 'test12345', 'YI', 'FANG HSIEH', 'student', '11111111-1111-1111-1111-111111111111', 'B1'),
-    ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'teacher@gmail.com', 'test12345', 'John', 'Smith', 'teacher', NULL, NULL),
-    ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'admin@gmail.com', 'test12345', 'Admin', 'User', 'admin', NULL, NULL)
+    ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'test@gmail.com', '$2a$10$kikI1Z53iIyDhQTTUgw5xuGEbak5wNDWB7QPM3KIJDtvPI70TdumK', 'YI', 'FANG HSIEH', 'student', '11111111-1111-1111-1111-111111111111', 'B1'),
+    ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'teacher@gmail.com', '$2a$10$kikI1Z53iIyDhQTTUgw5xuGEbak5wNDWB7QPM3KIJDtvPI70TdumK', 'John', 'Smith', 'teacher', NULL, NULL),
+    ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'admin@gmail.com', '$2a$10$kikI1Z53iIyDhQTTUgw5xuGEbak5wNDWB7QPM3KIJDtvPI70TdumK', 'Admin', 'User', 'admin', NULL, NULL)
 ON CONFLICT (email) DO NOTHING;
 
 -- Sample Tracking Events
